@@ -1,43 +1,7 @@
-class Movable {
-  PVector pos, vel, acc;
-  float rot, friction, maxVel;
-  boolean alive;
-  
-  Movable(float x, float y) {
-    pos = new PVector(x, y);
-    vel = new PVector(0, 0);
-    acc = new PVector(0, 0);
-    
-    rot = 0;
-    friction = 0.99;
-    maxVel = 50;
-    alive = true;
-  }
-  
-  void update() {
-    wrap();
-    vel.add(acc);
-    vel.limit(maxVel);
-    vel.mult(friction);
-    pos.add(vel);
-    
-    acc.mult(0);
-  }
-  
-  void applyForce(PVector force) {
-    acc.add(force);
-  }
-  
-  void wrap() {
-    if (pos.x < -50) { pos.x = width; }
-    if (pos.x > width + 50) { pos.x = 0; }
-    if (pos.y < -50) { pos.y = height; }
-    if (pos.y > height + 50) { pos.y = 0; }
-  }
-}
-
 class Player extends Movable { 
   PShape s;
+  // Stores all projectiles fired by the player
+  // Projectiles should be deleted when off screen
   ArrayList<Projectile> projectiles;
   
   // Constructor
@@ -45,14 +9,16 @@ class Player extends Movable {
     super(width/2, height/2);
     this.s = s;
     projectiles = new ArrayList<Projectile>();
+    
+    collisionRadius = 15;
   }
   
   void kbInput(HashMap<Character, Boolean> inputs) {
     if(inputs.get('w')) {
-      applyForce(PVector.fromAngle(rot - PI/2).setMag(1));
+      applyForce(PVector.fromAngle(rot - PI/2).setMag(.5));
     }
     if(inputs.get('s')) {
-      applyForce(PVector.fromAngle(rot + PI/2).setMag(.5));
+      applyForce(PVector.fromAngle(rot + PI/2).setMag(.1));
     }
     if(inputs.get('d')) {
       rot += 0.1;
@@ -61,6 +27,8 @@ class Player extends Movable {
       rot -= 0.1;
     }
     if(inputs.get(' ')) {
+      // Reset spacebar input so only fire once per press
+      inputs.put(' ', false);
       shoot();
     }
   }
@@ -76,9 +44,10 @@ class Player extends Movable {
     shape(this.s, 0, 0, 40, 40);
     popMatrix();
     
+    // update and draw all projectiles belonging to the player
     for(int i = projectiles.size()-1; i >= 0; i--) {
       Projectile proj = projectiles.get(i);
-      if(proj.offScreen()) {
+      if(proj.offScreen()) {  // dereference projectiles if they are off screen
         projectiles.remove(i);
         continue;
       }
@@ -86,6 +55,13 @@ class Player extends Movable {
       proj.draw();
     }
   }
+  
+  void drawCollisionCircle() {
+    stroke(0);
+    noFill();
+    ellipse(pos.x, pos.y, collisionRadius*2, collisionRadius*2);
+  }
+  
 }
 
 class Projectile extends Movable {

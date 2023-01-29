@@ -12,7 +12,7 @@ char[] possibleInputs = {'w', 'a', 's', 'd', ' '};
 void setup() {
   shapeMode(CENTER);
   surface.setTitle("Jacob Desilets - Happy Accidents");
-  size(1000, 500);
+  size(1000, 800);
   
   s = loadShape("player.svg");
   p = new Player(s);
@@ -35,6 +35,7 @@ void draw() {
   p.kbInput(kbInputs);
   p.update();
   p.draw();
+  p.drawCollisionCircle();
   
   fill(0);
   text("FPS: " + frameRate, 10, 10); 
@@ -50,13 +51,4 @@ void keyReleased() {
   if(arrayContains(possibleInputs, key)) {
     kbInputs.put(key, false);
   }
-}
-
-boolean arrayContains(char[] pi, char i) {
-  for (char c : pi) {
-    if(c == i) {
-      return true;
-    }
-  }
-  return false;
 }
