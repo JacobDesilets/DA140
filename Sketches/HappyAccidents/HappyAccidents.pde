@@ -1,18 +1,29 @@
+import java.util.Map;
+
 PShape s;
 Player p;
 
+HashMap<Character, Boolean> kbInputs;
+
 float deltaTime, startTime, currentTime;
+
+char[] possibleInputs = {'w', 'a', 's', 'd', ' '};
 
 void setup() {
   shapeMode(CENTER);
   surface.setTitle("Jacob Desilets - Happy Accidents");
-  size(500, 500);
+  size(1000, 500);
   
   s = loadShape("player.svg");
   p = new Player(s);
   
   deltaTime = 0;
   startTime = System.nanoTime();
+  
+  kbInputs = new HashMap<Character, Boolean>();
+  for (char c : possibleInputs) {
+    kbInputs.put(c, false);
+  }
 }
 
 void draw() {
@@ -21,14 +32,31 @@ void draw() {
   //startTime = currentTime;
   
   background(255);
+  p.kbInput(kbInputs);
   p.update();
   p.draw();
   
-  if(keyPressed) {
-    p.kbInput(key);
-  }
-  
   fill(0);
-  text(p.pos.x + " " + p.pos.y, 10, 10); 
-  
+  text("FPS: " + frameRate, 10, 10); 
+}
+
+void keyPressed() {
+  if(arrayContains(possibleInputs, key)) {
+    kbInputs.put(key, true);
+  }
+}
+
+void keyReleased() {
+  if(arrayContains(possibleInputs, key)) {
+    kbInputs.put(key, false);
+  }
+}
+
+boolean arrayContains(char[] pi, char i) {
+  for (char c : pi) {
+    if(c == i) {
+      return true;
+    }
+  }
+  return false;
 }
