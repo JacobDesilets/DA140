@@ -10,7 +10,7 @@ class Player extends Movable {
     this.s = s;
     projectiles = new ArrayList<Projectile>();
     
-    collisionRadius = 15;
+    collisionRadius = 10;
   }
   
   void kbInput(HashMap<Character, Boolean> inputs) {
@@ -38,6 +38,7 @@ class Player extends Movable {
   }
   
   void draw() {
+    update();
     pushMatrix();
     translate(pos.x, pos.y);
     rotate(rot);
