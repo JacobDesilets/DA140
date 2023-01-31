@@ -40,9 +40,9 @@ class Movable {
     if (pos.y > height + 151) { pos.y = 0; }
   }
   
-  boolean collisionCheck(float x, float y) {
+  boolean collisionCheck(Movable m) {
     // for the sake of simplicity, just check the distance from the point to the center of the object
-    if(dist(x, y, pos.x, pos.y) < collisionRadius) { return true; }
+    if(dist(m.pos.x, m.pos.y, pos.x, pos.y) < (collisionRadius + m.collisionRadius)) { return true; }
     return false;
   }
 }
@@ -50,15 +50,17 @@ class Movable {
 class GameManager {
   ArrayList<Asteroid> asteroids;
   Player p;
+  PShape[] asteroidShapes;
   
   int score;
   String gameState;
   
-  final int MAX_ASTEROIDS = 15;
+  final int MAX_ASTEROIDS = 12;
   
-  GameManager(Player p) {
+  GameManager(Player p, PShape[] asteroidShapes) {
     asteroids = new ArrayList<Asteroid>();
     this.p = p;
+    this.asteroidShapes = asteroidShapes;
     score = 0;
     
     gameState = "PLAYING";  // PLAYING or GAMEOVER
@@ -94,25 +96,33 @@ class GameManager {
         break;
     }
     
-    Asteroid a = new Asteroid(spawnX, spawnY, random(10, 31));
+    int shapeIndex = (int)random(3);
+    
+    Asteroid a = new Asteroid(spawnX, spawnY, random(10, 31), asteroidShapes[shapeIndex]);
     PVector toCenter = new PVector(-(spawnX - width/2), -(spawnY - height/2)).setMag(random(1, 5));
-    a.applyForce(toCenter);
+    PVector toPlayer = new PVector(-(spawnX - p.pos.x), -(spawnY - p.pos.y)).setMag(random(1, 5));
+    a.applyForce(toPlayer);
     asteroids.add(a);
   }
   
   void manage() {
     draw();
+    
+    // Stop here if game over
+    if(gameState.equals("GAMEOVER")) { return; }
     // Spawn new asteroid if applicable
     int count = asteroids.size();
-    if(count < MAX_ASTEROIDS && randomChance(10)) {
-      spawn();
+    if(gameState.equals("PLAYING")) {
+      if(count < MAX_ASTEROIDS && randomChance(10)) {
+        spawn();
+      }
     }
     
     // detect collisions and destroy asteroids
     for (int i = asteroids.size() - 1; i >= 0; i--) {
       Asteroid a = asteroids.get(i);
       for (Projectile proj : p.projectiles) {
-        if(a.collisionCheck(proj.pos.x, proj.pos.y)) {
+        if(a.collisionCheck(proj)) {
           asteroids.remove(i);
           score += 10;
         }
@@ -121,7 +131,7 @@ class GameManager {
     
     // detect collision with player
     for (Asteroid a : asteroids) {
-      if(a.collisionCheck(p.pos.x, p.pos.y)) {
+      if(a.collisionCheck(p)) {
         gameState = "GAMEOVER";
         println("GAMEOVER");
       }

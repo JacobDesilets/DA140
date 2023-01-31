@@ -72,6 +72,7 @@ class Projectile extends Movable {
     this.rot = rot;
     this.d = d;
     applyForce(PVector.fromAngle(rot).setMag(mag));
+    collisionRadius = d/2;
   }
   
   void draw() {
