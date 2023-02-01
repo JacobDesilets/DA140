@@ -65,6 +65,12 @@ class Player extends Movable {
     noFill();
     ellipse(pos.x, pos.y, collisionRadius*2, collisionRadius*2);
   }
+  
+  // Override base class method to clear projectiles
+  void reset() {
+    super.reset();
+    projectiles.clear();
+  }
 }
 
 class Projectile extends Movable {
