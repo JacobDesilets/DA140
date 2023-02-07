@@ -2,6 +2,8 @@ ArrayList<Ball> balls;
 
 long currentTime, startTime, deltaTime;
 
+int ballID = 0;
+
 void setup() {
   colorMode(HSB);
   size(500, 500);
@@ -18,7 +20,7 @@ void draw() {
   background(0);
   
   for(Ball b : balls) {
-    b.update();
+    b.update(balls);
     b.display();
   }
 }
@@ -27,7 +29,8 @@ void keyReleased() {
   switch(key) {
     case ' ':
       
-      balls.add(new Ball(random(10, width-9), random(height/3), random(10, 30)));
+      balls.add(new Ball(random(10, width-9), random(height/3), random(10, 30), ballID));
+      ballID++;
       break;
   }
 }
