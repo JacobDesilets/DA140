@@ -15,11 +15,11 @@ class Ball {
     this.id = id;
     hue = (int) random(256);
     
-    randomForce();
+    randomForce(random(10,100));
   }
   
-  void randomForce() {
-    applyForce(PVector.fromAngle(random(2*PI)).setMag(random(100)));
+  void randomForce(float mag) {
+    applyForce(PVector.fromAngle(random(2*PI)).setMag(mag));
   }
   
   void update(ArrayList<Ball> others) {
@@ -37,6 +37,8 @@ class Ball {
     
     vel.add(acc);
     pos.add(vel);
+    
+    
     
     acc.mult(0);
   }
@@ -69,6 +71,10 @@ class Ball {
     }
   }
   
+  boolean mouseOver(float x, float y) {
+    return (dist(pos.x, pos.y, x, y) <= mass/2);
+  }
+  
   void ballCollide(Ball other) {
     // if the distance between the centers of the two balls is less
     // than this, they have collided
@@ -77,28 +83,24 @@ class Ball {
     
     
     if(distance <= collisionDistance) {
-      // https://spicyyoghurt.com/tutorials/html5-javascript-game-development/collision-detection-physics
-      PVector collisionNormal = new PVector(other.pos.x - pos.x, other.pos.y - pos.y).normalize();
-      PVector relVel = new PVector(vel.x - other.vel.x, vel.y - other.vel.y);
-      float speed = PVector.dot(relVel, collisionNormal);
-      float impulse = 2 * speed / (mass + other.mass);
-      float thisChangeX = (impulse * other.mass * collisionNormal.x);
-      float thisChangeY = (impulse * other.mass * collisionNormal.y);
-      float otherChangeX = (impulse * mass * collisionNormal.x);
-      float otherChangeY = (impulse * mass * collisionNormal.y);
+      // https://gamedevelopment.tutsplus.com/tutorials/when-worlds-collide-simulating-circle-circle-collisions--gamedev-769
+      float newVX = ((2 * other.mass * other.vel.x) + (vel.x * (mass - other.mass))) / (mass + other.mass);
+      float newVY = ((2 * other.mass * other.vel.y) + (vel.y * (mass - other.mass))) / (mass + other.mass);
       
-      vel.x -= thisChangeX;
-      vel.y -= thisChangeY;
-      // Prevents balls from getting stuck inside each other
-      pos.x -= thisChangeX;
-      pos.y -= thisChangeY;
+      float otherNewVX = ((2 * mass * vel.x) + (other.vel.x * (other.mass - mass))) / (mass + other.mass);
+      float otherNewVY = ((2 * mass * vel.y) + (other.vel.y * (other.mass - mass))) / (mass + other.mass);
       
-      other.vel.x += otherChangeX;
-      other.vel.y += otherChangeY;
-      // Prevents balls from getting stuck inside each other
-      other.pos.x += otherChangeX;
-      other.pos.y += otherChangeY;
+      vel.x = newVX;
+      vel.y = newVY;
       
+      other.vel.x = otherNewVX;
+      other.vel.y = otherNewVY;
+      
+      // Ensures that balls don't get stuck inside each other
+      pos.x += newVX;
+      pos.y += newVY;
+      other.pos.x += otherNewVX;
+      other.pos.y += otherNewVY;
     }
     
   }
