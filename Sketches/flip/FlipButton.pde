@@ -4,6 +4,10 @@ class FlipButton {
   float x, y, w, h;
   int hue, group;
   boolean flipped;
+  boolean matched = false;
+  long timer;
+  int dur;
+  boolean timerSet = false;
   
   FlipButton(float x, float y, float w, float h, int group) {
     this.x = x;
@@ -15,21 +19,47 @@ class FlipButton {
     hue = (int)random(256);
     
     flipped = false;
+    timer = 0;
+    dur = -1;
   }
   
   void display() {
     noStroke();
     if(flipped) {
       fill(0);
+      if(matched) { fill(#6F6F6F); }
       rect(x, y, w, h);
       fill(255);
-      textSize(50);
-      text(group, x+50, y+50);
+      if(matched) { fill(#69C177); }
+      textSize(h/2);
+      text(group, x+(w/2), y+(h/2));
     } else {
-      fill(hue, 255, 255);
-      rect(x, y, w, h);
+      if(checkTimer()) {
+        fill(hue, 255, 255);
+        rect(x, y, w, h);
+      }
     }
   }
+    
+    void setTimer(int dur) {
+      println("Set timer for button at " + x + " " + y);
+      timer = millis();
+      this.dur = dur;
+      timerSet = true;
+    }
+    
+    boolean checkTimer() {
+      if(!timerSet) { return true; }
+      if(millis() - timer >= dur) {
+        timer = 0;
+        dur = -1;
+        flipped = false;
+        println("Timer ran out!");
+        timerSet = false;
+        return true;
+      }
+      return false;
+    }
   
   boolean pointOver(float x, float y) {
     return ((x >= this.x && x <= this.x+w) && (y >= this.y && y <= this.y+h));
@@ -37,8 +67,11 @@ class FlipButton {
 }
 
 class GameManager {
-  int rows, cols, flipCount, flippedGroup, score;
+  int rows, cols, score, flippedGroup;
+  long timer;
   FlipButton[][] buttons;
+  ArrayList<FlipButton> flippedButtons;
+  int DELAY_FLIP = 1000; // how long to wait to flip back on wrong answer
   
   GameManager(int rows, int cols) {
     this.rows = rows;
@@ -46,18 +79,13 @@ class GameManager {
     assert((rows*cols) % 2 == 0); // Must be an even number of buttons
     
     int groupIndex = 1;
-    //int[] groups = new int[(rows * cols)];
     ArrayList<Integer> groups = new ArrayList<>();
     for(int i = 0; i < rows * cols; i += 2) {
-      //groups[i] = groupIndex;
-      //groups[i+1] = groupIndex;
       groups.add(groupIndex);
       groups.add(groupIndex);
       groupIndex++;
       
-      flipCount = 0;
-      flippedGroup = 0;
-      score = 0;
+      
     }
     
     Collections.shuffle(groups);
@@ -73,41 +101,46 @@ class GameManager {
         groupIndex++;
       }
     }
+    flippedGroup = 0;
+    score = (rows * cols) * 3;
+    flippedButtons = new ArrayList<FlipButton>();
+    
+    timer = millis();
   }
   
-  void reset() {
-    println("reset");
-    flipCount = 0;
-    flippedGroup = 0;
-    
+  void mouseCheck(int mX, int mY) {
     for(int i = 0; i < rows; i++) {
       for(int j = 0; j < cols; j++) {
-        buttons[i][j].flipped = false;
+        if(buttons[i][j].pointOver(mX, mY) && buttons[i][j].flipped == false) {
+          flip(buttons[i][j]);
+        }
       }
     }
   }
   
-  void mouseCheck(int mX, int mY) {
-    
-    for(int i = 0; i < rows; i++) {
-      for(int j = 0; j < cols; j++) {
-        if(buttons[i][j].pointOver(mX, mY)) {
-          buttons[i][j].flipped = true;
-          if(flipCount == 0) {
-            flipCount += 1;
-            flippedGroup = buttons[i][j].group;
-          } else {
-            if(buttons[i][j].group == flippedGroup) {
-              score += 1;
-              println("Score " + score);
-            }
-            display();
-            stopUntil(1000);
-            reset();
-          }
-          println(flipCount);
-        }
+  void flip(FlipButton button) {
+    score--;
+    int flippedCount = flippedButtons.size();
+    if(flippedCount == 0) {
+      flippedGroup = button.group;
+      flippedButtons.add(button);
+      button.flipped = true;
+    } else if(button.group == flippedGroup) {
+      flippedButtons.add(button);
+      button.flipped = true;
+      for(FlipButton b : flippedButtons) {
+        b.matched = true;
       }
+      flippedButtons.clear();
+    } else {
+      flippedButtons.add(button);
+      button.flipped = true;
+      button.display();
+      for(FlipButton b : flippedButtons) {
+        b.flipped = false;
+        b.setTimer(DELAY_FLIP);
+      }
+      flippedButtons.clear();
     }
   }
   
@@ -119,17 +152,4 @@ class GameManager {
       }
     }
   }
-  
-  void stopUntil(int millis) {
-    last = millis();
-    while(true) {
-      now = millis();
-      deltaTime = now - last;
-      if(deltaTime > millis) { break; }
-    }
-    println("waited!");
-  }
-  
-  
-  
 }

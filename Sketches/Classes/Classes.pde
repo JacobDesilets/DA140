@@ -13,6 +13,8 @@ long currentTime, startTime, deltaTime;
 
 int ballID = 0;
 
+Ball selected;
+
 void setup() {
   colorMode(HSB);
   size(500, 500);
@@ -24,6 +26,7 @@ void setup() {
   }
   
   startTime = 0;
+  selected = null;
 }
 
 void draw() {
@@ -38,14 +41,9 @@ void draw() {
     b.display();
   }
   
-  if(mousePressed && mouseButton==LEFT) {
-    for(Ball b : balls) {
-        if(b.mouseOver(mouseX, mouseY)) {
-          b.pos.x = mouseX;
-          b.pos.y = mouseY;
-          b.vel.mult(0);
-        }
-      }
+  if(selected != null) {
+    PVector toMouse = new PVector(mouseX, mouseY).sub(selected.pos).setMag(10);
+    selected.applyForce(toMouse);
   }
 }
 
@@ -62,6 +60,16 @@ void keyReleased() {
     case 'c':
       balls.clear();
       break;
+  }
+}
+
+void mousePressed() {
+  if(mouseButton==LEFT) {
+    for(Ball b : balls) {
+      if(b.mouseOver(mouseX, mouseY)) {
+        selected = b;
+      }
+    }
   }
 }
 

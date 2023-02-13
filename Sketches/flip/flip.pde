@@ -14,7 +14,7 @@ void setup() {
   size(500, 500);
   colorMode(HSB);
   
-  gm = new GameManager(4,4);
+  gm = new GameManager(4,4);  // rows * cols must be even
   
   now = 0;
   last = 0;
@@ -30,5 +30,5 @@ void draw() {
   
   
   gm.display();
-  surface.setTitle("Score " + gm.score);
+  surface.setTitle("Score: " + gm.score);
 }
