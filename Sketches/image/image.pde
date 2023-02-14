@@ -1,19 +1,27 @@
+import java.util.Collections;
+
 PImage img;
 int interval;
 
+
 ArrayList<Point> points;
 
-int timer;
+float scale = 20;
 
 void settings() {
   img = loadImage("dog.jpg");
   size(img.width, img.height);
+  
 }
 
 void setup() {
+  frameRate(120);
   background(255);
   noStroke();
   interval = 10;
+  
+  img.filter(DILATE);
+  img.filter(POSTERIZE, 16);
   
   points = new ArrayList<Point>();
   
@@ -29,7 +37,7 @@ void setup() {
     }
   }
   
-  timer = millis();
+  Collections.shuffle(points);
 }
 
 void mouseWheel(MouseEvent event) {
@@ -40,12 +48,9 @@ void mouseWheel(MouseEvent event) {
 }
 
 void draw() {
-  background(255);
+  scale = lerp(scale, 0.5, 0.001);
   
-  
-}
-
-boolean checkTimer(int duration) {
-  int dt = millis() - timer;
+  int r = (int)random(points.size());
+  points.get(r).display(scale);
   
 }

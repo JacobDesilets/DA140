@@ -10,9 +10,11 @@ class Point {
     this.c = c;
   }
   
-  void display() {
+  void display(float scale) {
     noStroke();
     fill(c);
-    ellipse(w, y, x, h);
+    ellipse(x, y, w*scale, h*scale);
   }
+  
+  
 }
