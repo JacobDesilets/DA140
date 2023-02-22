@@ -2,12 +2,12 @@ import processing.sound.*;
 SoundFile music;
 BeatDetector beat;
 
-float r;
+float r, z;
 
 PImage texture;
 PShape ball;
 
-int hue;
+int hue, mult;
 
 Amplitude amp;
 
@@ -16,7 +16,7 @@ void setup() {
   colorMode(HSB);
   size(500, 500, P3D);
   background(0);
-  music = new SoundFile(this, "Space Jazz.mp3");
+  music = new SoundFile(this, "Aggressor.mp3");
   music.loop();
   
   beat = new BeatDetector(this);
@@ -29,33 +29,37 @@ void setup() {
   noFill();
   noStroke();
   
-  texture = loadImage("world.jpg");
+  texture = loadImage("jacob.jpg");
   ball = createShape(SPHERE, 100);
   ball.setTexture(texture);
   
   hue = 0;
   r = 0.01;
+  z = 0;
+  mult = 1;
 }
 
 void draw() {
   background(hue % 255, 255, 255);
   
-  directionalLight(255, 0, 255, -1, -1, -1);
+  directionalLight(255, 0, 255, -0.5, -1, -1);
   
+  if(z >= 60) { mult = -1; }
+  else if(z <= -60) {mult = 1; }
+  float move;
+  if(amp.analyze() >= 0.45) { move = 3; }
+  else { move = 0.1; }
+  translate(width/2, height/2, z += move * mult);
   
-  translate(width/2, height/2, 0);
-  rotateX(r);
-  rotateY(r);
-  //rotateZ(r);
+  ball.rotateX(r);
+  ball.rotateY(r);
+  ball.rotateZ(r);
   
   if(beat.isBeat()) {
-    hue += 5;
+    hue += 20;
   } else {
     hue += 1;
   }
-  
-  r += 0.01;
-  
-  ball.translate(0, 0, amp.analyze());
+   
   shape(ball);
 }
